@@ -1,0 +1,26 @@
+{
+  "name": "novel-codex",
+  "version": "3.0.0",
+  "description": "Codex 自动小说创作插件：沿用 NovelHarness v3 的调度、审校、记忆、脚本和质量档位，并提供双击 BAT 启动入口。",
+  "author": {
+    "name": "NovelCodex",
+    "email": "",
+    "url": ""
+  },
+  "license": "MIT",
+  "keywords": ["novel", "codex", "writing", "orchestrator"],
+  "interface": {
+    "displayName": "NovelCodex",
+    "shortDescription": "用 Codex CLI 自动生成多章节小说。",
+    "longDescription": "NovelCodex 将 NovelHarness v3 的多智能体小说创作流程移植到 Codex：双击启动器后输入小说信息、章节数和质量档位，即可启动 Codex CLI 自动执行蓝图、细纲、正文、审校和后处理流程。",
+    "developerName": "NovelCodex",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "defaultPrompt": [
+      "写一个小说，现代奇遇题材，写前3章，中档品质。",
+      "继续写5章，高档完成。",
+      "写完本小说，共20章，高档品质。"
+    ],
+    "brandColor": "#2563EB"
+  }
+}
