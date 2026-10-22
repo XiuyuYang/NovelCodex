@@ -1,4 +1,4 @@
-import copy,importlib.util,json,tempfile,unittest
+import copy,importlib.util,json,tempfile,unittest,subprocess,sys
 from pathlib import Path
 sp=importlib.util.spec_from_file_location('delta',str(Path(__file__).with_name('apply_patch.py')));m=importlib.util.module_from_spec(sp);sp.loader.exec_module(m)
 class Tests(unittest.TestCase):
@@ -38,4 +38,15 @@ class Tests(unittest.TestCase):
   self.write(self.patch([self.replace('甲给乙粮食。乙保存种子。')]));m.apply(self.c,self.q);raw=self.c.read_bytes()
   with self.assertRaises(ValueError):m.apply(self.c,self.q)
   self.assertEqual(raw,self.c.read_bytes())
+ def test_parallel_candidates_one_commit(self):
+  a=self.p/'a.json';b=self.p/'b.json'
+  a.write_text(json.dumps(self.patch([self.replace('甲给乙粮食。乙保存种子。')]),ensure_ascii=False))
+  b.write_text(json.dumps(self.patch([dict(op='replace',collection='events',id='E2',value=dict(id='E2',text='乙答应帮忙并修船。'))]),ensure_ascii=False))
+  script=str(Path(__file__).with_name('apply_patch.py'))
+  workers=[subprocess.Popen([sys.executable,script,str(self.c),str(x)],stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True) for x in (a,b)]
+  outputs=[w.communicate(timeout=15) for w in workers]
+  self.assertEqual(sorted(w.returncode for w in workers),[0,1])
+  self.assertEqual(m.read_json(self.c)['version'],2)
+  self.assertEqual(len(list((self.p/'history').glob('*.json'))),1)
+  self.assertTrue(any('stale base' in err for out,err in outputs))
 if __name__=='__main__':unittest.main(verbosity=2)
