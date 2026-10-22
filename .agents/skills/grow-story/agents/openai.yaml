@@ -1,0 +1,13 @@
+interface:
+  display_name: 剧情生长
+  short_description: 从一句话迭代生长完整剧情，核对人物与设定并维护版本和来源记录
+  default_prompt: 使用 $grow-story 从故事种子自主选择发展方向，完成一轮剧情生长和一致性检查。
+  icon_small: assets/icon.svg
+  icon_large: assets/icon.svg
+policy:
+  products:
+  - chatgpt
+  - codex
+  - api
+  - atlas
+  allow_implicit_invocation: true
