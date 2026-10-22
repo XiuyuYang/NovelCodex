@@ -1,87 +1,29 @@
-# NovelCodex
+# NovelCodex — 剧情生长
 
-This root is intentionally small.
+使用现成模型和 grow-story Skill，从一句话迭代完整、简洁的剧情框架。创作、连续性审核、局部变更提交分别进行；通过检查后统一更新事件、人物、设定和伏笔。
 
-```text
-NovelCodex/
-+-- start-novel-codex.bat
-+-- novels/
-+-- system/
-```
+## 使用
 
-- `system/` contains the NovelCodex engine, agent rules, scripts, templates, references, settings, and tests.
-- `novels/` contains generated books. Each book has its own `runtime.json`, `drafts/`, `output/`, `logs/`, `memory/`, and `resume-this-novel.bat`.
+在本仓库根目录打开支持项目 Skills 的 Codex，调用 `$grow-story`。若未自动发现，让执行实例读取 `.agents/skills/grow-story/SKILL.md`。
 
-## Start A New Novel
+示例：使用 $grow-story，从我的故事种子创建完整简版，再自主完成一轮生长；只生成剧情框架，审核后用局部变更更新记录。
 
-Double-click:
+项目记录规范见 [state.md](.agents/skills/grow-story/references/state.md)，局部提交协议见 [delta.md](.agents/skills/grow-story/references/delta.md)，连续性审核见 [continuity.md](.agents/skills/grow-story/references/continuity.md)。首次使用需按记录规范初始化 current.json；目前没有一键初始化和自动长程调度器。
 
-```bat
-start-novel-codex.bat
-```
+## 运行环境与测试
 
-On a successful start, NovelCodex creates a new folder under `novels/` for that book's process files and results.
-
-## Resume Work
-
-Resume a book from that book's own folder:
-
-```bat
-novels\<book-folder>\resume-this-novel.bat
-```
-
-Resume runs are bound to the folder that contains `resume-this-novel.bat`. They are open-ended: each resume moves that book's target to the chapter after the latest completed chapter, and the Codex prompt keeps advancing that one-chapter frontier until you stop it or a real blocker occurs.
-
-## Metadata Tools
-
-Check progress without reading creative content:
-
-```powershell
-.\system\scripts\novel-status.ps1 -SystemRoot .\system -NovelRoot .\novels\<book-folder> -WorkflowTail 20
-```
-
-Generate the safe resume prompt:
-
-```powershell
-.\system\scripts\novel-next-prompt.ps1 -SystemRoot .\system -NovelRoot .\novels\<book-folder>
-```
-
-Inspect quota/tool errors:
-
-```powershell
-.\system\scripts\novel-health.ps1 -SystemRoot .\system -NovelRoot .\novels\<book-folder>
-```
-
-Full low-context diagnosis for resuming after quota recovery:
-
-```powershell
-.\system\scripts\novel-doctor.ps1 -SystemRoot .\system -NovelRoot .\novels\<book-folder>
-```
-
-Review gate used by the orchestration flow after reviewer batches:
-
-```powershell
-.\system\scripts\review-gate.ps1 -NovelRoot .\novels\<book-folder> -Chapter 01 -Phase draft
-```
-
-Targeted consistency lookup used inside planner/writer/reviewer roles:
-
-```powershell
-.\system\scripts\consistency-lookup.ps1 -NovelRoot .\novels\<book-folder> -Query "<entity/location/rule>"
-```
-
-## 剧情生长 Skill（实验版）
-
-新增的 `grow-story` 位于 [.agents/skills/grow-story](.agents/skills/grow-story)。它从种子迭代完整、简洁的剧情框架，支持人物与跨剧情连续性审核、局部 JSON 变更及原子保存。现有 `system/` 章节工作流和启动脚本未接入此新流程。
-
-在仓库根目录开启支持项目 Skills 的 Codex 会话，明确调用 `$grow-story`；若客户端未自动发现，可让它读取 `.agents/skills/grow-story/SKILL.md`。首次使用先按 `references/state.md` 创建项目状态；修改时按 `references/delta.md` 生成局部包，再审核和提交。
-
-示例请求：使用 $grow-story，从一句话故事生成完整简版，再自主完成一轮生长；只输出剧情框架，采用前检查连续性，采用后同步记录。
-
-脚本需要 Python 3 和 POSIX（Linux/macOS/WSL）；目前使用 `fcntl`，不直接支持原生 Windows。运行测试：
+Python 3，Linux/macOS/WSL。合并脚本使用 fcntl，目前不直接支持原生 Windows。
 
 ```sh
 python .agents/skills/grow-story/scripts/test_apply_patch.py
+python .agents/skills/grow-story/scripts/apply_patch.py <current.json> <patch.json> --dry-run
+python .agents/skills/grow-story/scripts/apply_patch.py <current.json> <patch.json>
 ```
 
-已通过 11 项合并程序测试，以及一组 6 案例的连续性审核实验。结构校验不证明故事合理；长篇稳定性、向量检索和自动语义审核尚未验证或实现。人物卡当前按受影响条目替换，并非字段级最小补丁。
+局部包由模型生成，程序重建完整状态，校验版本、编号、来源引文和依赖，保存旧版本后原子发布。结构校验不证明剧情合理或记忆语义正确，提交前仍需审核。
+
+## 当前验证范围
+
+11 项程序测试通过；已完成一组 6 候选的连续性审核，以及鱼缸故事局部提交试跑。试跑发现过人物卡概括过强的问题，已用局部修复包修复。长篇稳定性、向量检索、自动语义审核尚未验证或实现。
+
+本次版本以新版内容替换旧文件树；旧章节生成系统只保留于 Git 提交历史，不在当前工作树中。
